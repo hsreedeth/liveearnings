@@ -3,1038 +3,504 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#0b0f17" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Live Earnings</title>
 
   <style>
-    :root{
-      --bg:#ffffff;
-      --text:#111111;
-      --muted:#6b6b6b;
-      --muted2:#9a9a9a;
-      --line:#e8e8e8;
-      --chip:#f3f3f3;
-      --btn:#d9d9d9;
-      --btnText:#111;
-      --accent:#ff4b3a;
-
-      --radius:16px;
-      --shadow: 0 18px 50px rgba(0,0,0,.10);
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-
-      --maxw: 1200px;
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    .page{
-      min-height: 100%;
-      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-    }
-
-    .topbar{
-      max-width: var(--maxw);
-      margin: 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      padding: 6px 2px 18px;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-    }
-
-    .gear{
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: #fff;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      transition: transform .06s ease;
-    }
-    .gear:active{ transform: translateY(1px); }
-    .gear svg{ width: 18px; height: 18px; opacity:.75; }
-
-    .title{
-      font-weight: 700;
-      letter-spacing: .2px;
-      font-size: 16px;
-    }
-    .clock{
-      font-size: 13px;
-      color: var(--muted);
-      white-space: nowrap;
-      text-align:right;
-    }
-
-    .dash{
-      max-width: var(--maxw);
-      margin: 0 auto;
-      display:grid;
-      gap: 22px;
-      align-items:start;
-      grid-template-columns: 1fr;
-    }
-
-    /* Desktop layout: 3 columns like your screenshot */
-    @media (min-width: 980px){
-      .dash{
-        grid-template-columns: 260px 1fr 360px;
-        gap: 30px;
-      }
-    }
-
-    .panel{
-      border-radius: var(--radius);
-      background: transparent;
-    }
-
-    .kpiLabel{
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 4px;
-    }
-    .kpiValue{
-      font-size: 26px;
-      letter-spacing: .2px;
-    }
-
-    .leftKpis{
-      display:grid;
-      gap: 28px;
-      padding-top: 14px;
-    }
-
-    .centerBlock{
-      display:grid;
-      gap: 10px;
-      padding-top: 4px;
-      text-align:center;
-    }
-
-    .centerHeader{
-      font-size: 28px;
-      color: #2a2a2a;
-      letter-spacing: .2px;
-      margin-top: 10px;
-    }
-
-    .bigTime{
-      font-size: clamp(64px, 9vw, 132px);
-      font-family: var(--mono);
-      font-weight: 500;
-      letter-spacing: 1px;
-      color: #5b5b5b;
-      line-height: 1.0;
-    }
-
-    .rightBlock{
-      text-align:center;
-      padding-top: 4px;
-    }
-    .rightHeader{
-      font-size: 28px;
-      color: #2a2a2a;
-      letter-spacing: .2px;
-      margin-top: 10px;
-    }
-    .bigMoney{
-      font-size: clamp(64px, 9vw, 132px);
-      font-family: var(--mono);
-      font-weight: 500;
-      letter-spacing: 1px;
-      color: #5b5b5b;
-      line-height: 1.0;
-    }
-
-    .subline{
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 13px;
-      display:flex;
-      justify-content:center;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    /* Timeline */
-    .timelineWrap{
-      max-width: var(--maxw);
-      margin: 10px auto 0;
-    }
-
-    .timelineTrack{
-      position:relative;
-      height: 4px;
-      background: #f0f0f0;
-      border-radius: 999px;
-      overflow: visible;
-    }
-
-    .timelineFill{
-      position:absolute;
-      inset:0 auto 0 0;
-      width: 0%;
-      background: var(--accent);
-      border-radius: 999px;
-      transition: width .15s linear;
-    }
-
-    .timelineDot{
-      position:absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      background: var(--accent);
-      box-shadow: 0 8px 20px rgba(255,75,58,.25);
-    }
-
-    .timelineNowLabel{
-      position:absolute;
-      top: -22px;
-      transform: translateX(-50%);
-      color: var(--muted);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .timelineAxis{
-      margin-top: 16px;
-      border-top: 1px dashed #d9d9d9;
-      padding-top: 18px;
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .timelineAxis .minor{
-      color: var(--muted2);
-      font-size: 12px;
-      margin-top: 4px;
-    }
-
-    /* Buttons */
-    .controls{
-      max-width: var(--maxw);
-      margin: 26px auto 0;
-      display:grid;
-      gap: 14px;
-      grid-template-columns: 1fr;
-    }
-
-    @media (min-width: 760px){
-      .controls{
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 18px;
-      }
-    }
-
-    .btn{
-      height: 64px;
-      border: none;
-      border-radius: 14px;
-      background: var(--btn);
-      color: var(--btnText);
-      font-size: 20px;
-      font-weight: 500;
-      letter-spacing: .2px;
-      cursor:pointer;
-      transition: transform .06s ease, filter .15s ease;
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn:disabled{ opacity:.55; cursor:not-allowed; }
-    .btn.secondary{ background: #e3e3e3; }
-    .btn.danger{ background: #d9d9d9; }
-
-    /* Small status */
-    .statusRow{
-      max-width: var(--maxw);
-      margin: 10px auto 0;
-      display:flex;
-      justify-content:center;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 13px;
-      flex-wrap: wrap;
-    }
-    .pill{
-      padding: 6px 10px;
-      background: var(--chip);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      font-family: var(--mono);
-      color: #444;
-    }
-
-    /* Settings Modal (sheet style) */
-    .modalOverlay{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.25);
-      display:none;
-      align-items: flex-end;
-      justify-content:center;
-      padding: 16px;
-      z-index: 999;
-    }
-    .modalOverlay.open{ display:flex; }
-
-    .modal{
-      width: min(820px, 100%);
-      background: #fff;
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--line);
-      overflow:hidden;
-    }
-
-    .modalHeader{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-    }
-    .modalHeader .h{
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-    .modalHeader .close{
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: #fff;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-    }
-    .modalHeader .close:active{ transform: translateY(1px); }
-
-    .modalBody{
-      padding: 14px 16px 16px;
-      display:grid;
-      gap: 14px;
-    }
-
-    .section{
-      border: 1px solid var(--line);
+    :root { font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    body { margin: 0; background: #0b0f17; color: #e8eefc; -webkit-text-size-adjust: 100%; }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 20px; }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
       border-radius: 16px;
-      padding: 12px;
-      background: #fff;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
-    .sectionTitle{
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: .2px;
-      margin-bottom: 10px;
-      color: #2a2a2a;
+    h1 { font-size: 18px; margin: 0 0 8px; opacity: 0.9; }
+    .big {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 6px 0 6px;
     }
-
-    .formGrid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    @media (min-width: 760px){
-      .formGrid{ grid-template-columns: 1fr 1fr; }
-    }
-
-    label{
-      display:block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    input, select{
-      width:100%;
-      height: 44px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #fff;
-      padding: 10px 12px;
-      font-size: 15px;
-      outline:none;
-    }
-
-    .row2{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .smallBtn{
-      height: 42px;
-      padding: 0 14px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #f3f3f3;
-      cursor:pointer;
-      font-weight: 600;
-    }
-    .smallBtn:active{ transform: translateY(1px); }
-
-    .modalFooter{
-      padding: 12px 16px 16px;
-      border-top: 1px solid var(--line);
-      display:flex;
-      gap: 10px;
-      justify-content:flex-end;
-      flex-wrap: wrap;
-    }
-    .saveBtn{
-      height: 46px;
+    .sub { opacity: 0.85; font-size: 14px; margin: 6px 0 0; }
+    .row { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+    .pill {
+      flex: 1;
+      min-width: 160px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
       border-radius: 14px;
-      border: 1px solid var(--line);
-      background: #111;
-      color:#fff;
-      padding: 0 16px;
+      padding: 12px;
+    }
+    .label { font-size: 12px; opacity: 0.75; }
+    .value { font-size: 18px; font-weight: 700; margin-top: 4px; }
+    .btnrow { display: flex; gap: 10px; margin-top: 14px; }
+    button {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: #e8eefc;
       font-weight: 700;
-      cursor:pointer;
+      font-size: 15px;
+      cursor: pointer;
+      touch-action: manipulation;
     }
-    .saveBtn:active{ transform: translateY(1px); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    .primary { background: rgba(80, 140, 255, 0.22); border-color: rgba(80, 140, 255, 0.45); }
+    .danger  { background: rgba(255, 80, 110, 0.18); border-color: rgba(255, 80, 110, 0.40); }
 
-    .note{
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.35;
+    details { margin-top: 14px; }
+    summary { cursor: pointer; opacity: 0.9; font-weight: 700; }
+    .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    input {
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: #e8eefc;
+      font-size: 15px;
+      outline: none;
     }
+    .hint { font-size: 12px; opacity: 0.75; margin-top: 10px; line-height: 1.35; }
+    .status { margin-top: 10px; font-size: 13px; opacity: 0.85; }
+    .mono { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
 
-    /* Make modal float center on desktop */
-    @media (min-width: 980px){
-      .modalOverlay{
-        align-items:center;
-      }
+    @media (max-width: 420px) {
+      .big { font-size: 40px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <button class="gear" id="openSettings" aria-label="Open settings">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M19.4 15a8.3 8.3 0 0 0 .1-1l1.6-1.2-1.6-2.8-1.9.6a7.9 7.9 0 0 0-.8-.6l-.3-2h-3.2l-.3 2a7.9 7.9 0 0 0-.8.6l-1.9-.6-1.6 2.8L8.5 14a8.3 8.3 0 0 0 .1 1l-1.6 1.2 1.6 2.8 1.9-.6c.3.2.5.4.8.6l.3 2h3.2l.3-2c.3-.2.6-.4.8-.6l1.9.6 1.6-2.8L19.4 15Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <div>
-          <div class="title">Live Earnings</div>
-          <div style="font-size:12px;color:var(--muted2)">Westfield shift tracker</div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Live Earnings</h1>
+
+      <div class="big mono" id="money">A$0.00</div>
+      <div class="sub mono" id="clock">—</div>
+
+      <div class="row">
+        <div class="pill">
+          <div class="label">Time worked</div>
+          <div class="value mono" id="worked">00:00:00</div>
+        </div>
+
+        <div class="pill">
+          <div class="label">Shift start</div>
+          <div class="value mono" id="startedAt">—</div>
+        </div>
+
+        <div class="pill">
+          <div class="label">Effective hourly rate</div>
+          <div class="value mono" id="rate">A$0.00/hr</div>
+        </div>
+
+        <div class="pill">
+          <div class="label">Earning speed</div>
+          <div class="value mono" id="speed">A$0.0000/sec</div>
         </div>
       </div>
 
-      <div class="clock" id="clock">—</div>
-    </div>
-
-    <div class="dash">
-      <!-- Left: small KPIs -->
-      <div class="panel leftKpis">
-        <div>
-          <div class="kpiLabel">Hourly Rate</div>
-          <div class="kpiValue" id="hourlyRate">0.00</div>
-        </div>
-        <div>
-          <div class="kpiLabel">Earning Speed</div>
-          <div class="kpiValue" id="perSecond">0.0000 per second</div>
-        </div>
+      <div class="btnrow">
+        <button class="primary" id="startBtn">Start shift</button>
+        <button id="pauseBtn" disabled>Pause</button>
       </div>
 
-      <!-- Center: time worked -->
-      <div class="panel centerBlock">
-        <div class="centerHeader">Time Worked</div>
-        <div class="bigTime" id="timeWorked">00:00:00</div>
+      <div class="btnrow">
+        <button class="danger" id="resetBtn">End & reset</button>
       </div>
 
-      <!-- Right: earnings -->
-      <div class="panel rightBlock">
-        <div class="rightHeader">Live Earnings</div>
-        <div class="bigMoney" id="earnings">0.00</div>
+      <div class="status mono" id="status">Status: not started</div>
 
-        <div class="subline">
-          <span id="modePill" class="pill">Mode: Gross</span>
-          <span id="shiftStartPill" class="pill">Shift start: —</span>
-          <span id="statePill" class="pill">Not started</span>
-        </div>
-      </div>
-    </div>
+      <details id="settings">
+        <summary>Settings</summary>
 
-    <!-- Timeline -->
-    <div class="timelineWrap">
-      <div class="timelineTrack" aria-hidden="true">
-        <div class="timelineFill" id="timelineFill"></div>
-        <div class="timelineNowLabel" id="timelineNowLabel" style="left:0%">—</div>
-        <div class="timelineDot" id="timelineDot" style="left:0%"></div>
-      </div>
-
-      <div class="timelineAxis">
-        <div>
-          <div id="axisStart">—</div>
-          <div class="minor">Shift start</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="color:var(--muted2); font-size:12px; letter-spacing:.6px;">TIME</div>
-        </div>
-        <div style="text-align:right;">
-          <div id="axisEnd">—</div>
-          <div class="minor">Planned end</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Controls -->
-    <div class="controls">
-      <button class="btn" id="startBtn">Start Shift</button>
-      <button class="btn secondary" id="pauseBtn" disabled>Pause</button>
-      <button class="btn danger" id="resetBtn">End &amp; Reset</button>
-    </div>
-
-    <div class="statusRow" id="statusRow"></div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div class="modalOverlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
-    <div class="modal">
-      <div class="modalHeader">
-        <div class="h">Settings</div>
-        <button class="close" id="closeSettings" aria-label="Close settings">✕</button>
-      </div>
-
-      <div class="modalBody">
-        <div class="section">
-          <div class="sectionTitle">Pay</div>
-          <div class="formGrid">
-            <div>
-              <label for="baseRate">Hourly rate (gross, AUD)</label>
-              <input id="baseRate" type="number" step="0.01" min="0" placeholder="e.g. 33.19" />
-            </div>
-            <div>
-              <label for="dayMult">Day multiplier</label>
-              <select id="dayMult">
-                <option value="1.00">1.00 (Ordinary)</option>
-                <option value="1.25">1.25 (Saturday +25%)</option>
-                <option value="1.50">1.50 (Penalty 50%)</option>
-                <option value="2.00">2.00 (Double time)</option>
-              </select>
-            </div>
+        <div class="form">
+          <div class="field">
+            <label class="label" for="baseRate">Base hourly rate (AUD)</label>
+            <input id="baseRate" type="number" min="0" step="0.01" placeholder="e.g. 30.00" />
           </div>
 
-          <div class="row2">
-            <button class="smallBtn" id="presetOrdinary">Preset: Ordinary 33.19</button>
-            <button class="smallBtn" id="presetSaturday">Preset: Saturday 41.49</button>
+          <div class="field">
+            <label class="label" for="loadingPct">Casual loading (%)</label>
+            <input id="loadingPct" type="number" min="0" step="0.1" placeholder="e.g. 25" />
           </div>
 
-          <div class="note">
-            Tip: If your payslip rate already includes casual loading (common), just enter the payslip hourly and keep multiplier to the day you’re working.
+          <div class="field">
+            <label class="label" for="startTime">Shift start time (today)</label>
+            <input id="startTime" type="time" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="breakMins">Break minutes already taken</label>
+            <input id="breakMins" type="number" min="0" step="1" placeholder="e.g. 30" />
           </div>
         </div>
 
-        <div class="section">
-          <div class="sectionTitle">Net (After tax) display</div>
-          <div class="formGrid">
-            <div>
-              <label for="taxPct">Tax withheld % (estimate)</label>
-              <input id="taxPct" type="number" step="0.01" min="0" max="60" placeholder="e.g. 22.32" />
-            </div>
-            <div>
-              <label for="showNet">Display mode</label>
-              <select id="showNet">
-                <option value="gross">Gross (before tax)</option>
-                <option value="net">Net (after tax estimate)</option>
-              </select>
-            </div>
-          </div>
-          <div class="note">
-            PAYG withholding varies by week. If you want “most accurate”, keep updating this % using your real payslip averages.
-          </div>
+        <div class="btnrow">
+          <button id="saveSettingsBtn">Save settings</button>
+          <button id="applyStartBtn">Apply start time</button>
         </div>
 
-        <div class="section">
-          <div class="sectionTitle">Shift timing</div>
-          <div class="formGrid">
-            <div>
-              <label for="startTime">Backdate start (today)</label>
-              <input id="startTime" type="time" />
-            </div>
-            <div>
-              <label for="breakMins">Break minutes already taken</label>
-              <input id="breakMins" type="number" step="1" min="0" placeholder="e.g. 30" />
-            </div>
-            <div>
-              <label for="plannedHours">Planned shift length (hours)</label>
-              <input id="plannedHours" type="number" step="0.25" min="0" placeholder="e.g. 8" />
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <button class="smallBtn" id="applyStartBtn">Apply start time</button>
-            </div>
-          </div>
-          <div class="note">
-            “Apply start time” sets your worked time to (now − start) minus break minutes, then continues ticking.
-          </div>
+        <div class="hint">
+          Earnings are calculated as <b>base × (1 + loading%)</b> using elapsed worked time.
+          If your Saturday rate is already “all-in”, set loading to <b>0%</b> and put the all-in hourly rate as base.
+          <br /><br />
+          This is for personal tracking only—payroll/award rules remain the source of truth.
         </div>
-      </div>
-
-      <div class="modalFooter">
-        <button class="smallBtn" id="clearOnlyShift">Clear shift (keep pay)</button>
-        <button class="saveBtn" id="saveSettingsBtn">Save</button>
-      </div>
+      </details>
     </div>
   </div>
 
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const STORAGE_KEY = "liveEarnings.ui.v1";
 
-  // UI refs
-  const clockEl = $("clock");
+  // UI
+  const moneyEl     = $("money");
+  const clockEl     = $("clock");
+  const workedEl    = $("worked");
+  const startedAtEl = $("startedAt");
+  const rateEl      = $("rate");
+  const speedEl     = $("speed");
+  const statusEl    = $("status");
 
-  const hourlyRateEl = $("hourlyRate");
-  const perSecondEl  = $("perSecond");
-  const timeWorkedEl = $("timeWorked");
-  const earningsEl   = $("earnings");
+  const startBtn    = $("startBtn");
+  const pauseBtn    = $("pauseBtn");
+  const resetBtn    = $("resetBtn");
 
-  const modePill = $("modePill");
-  const shiftStartPill = $("shiftStartPill");
-  const statePill = $("statePill");
-  const statusRow = $("statusRow");
-
-  const timelineFill = $("timelineFill");
-  const timelineDot  = $("timelineDot");
-  const timelineNowLabel = $("timelineNowLabel");
-  const axisStart = $("axisStart");
-  const axisEnd   = $("axisEnd");
-
-  const startBtn = $("startBtn");
-  const pauseBtn = $("pauseBtn");
-  const resetBtn = $("resetBtn");
-
-  // Settings modal
-  const overlay = $("settingsOverlay");
-  const openSettingsBtn = $("openSettings");
-  const closeSettingsBtn = $("closeSettings");
-
-  const baseRateInput = $("baseRate");
-  const dayMultSelect = $("dayMult");
-  const taxPctInput   = $("taxPct");
-  const showNetSelect = $("showNet");
-
-  const startTimeInput = $("startTime");
-  const breakMinsInput = $("breakMins");
-  const plannedHoursInput = $("plannedHours");
-  const applyStartBtn = $("applyStartBtn");
-
-  const presetOrdinaryBtn = $("presetOrdinary");
-  const presetSaturdayBtn = $("presetSaturday");
+  const baseRateInput   = $("baseRate");
+  const loadingPctInput = $("loadingPct");
+  const startTimeInput  = $("startTime");
+  const breakMinsInput  = $("breakMins");
 
   const saveSettingsBtn = $("saveSettingsBtn");
-  const clearOnlyShiftBtn = $("clearOnlyShift");
+  const applyStartBtn   = $("applyStartBtn");
+
+  const STORAGE_KEY = "liveEarnings.v2";
 
   // State:
-  // - baseRate: gross hourly
-  // - dayMult: multiplier for sat/sun etc
-  // - taxPct: withholding estimate for net mode
-  // - displayMode: "gross" | "net"
-  // - plannedHours: for timeline end label
-  // shift timing:
-  // - started, running, startedAtMs, lastResumeAtMs, workedMs
-  // - manualBreakMins (only applied when you "Apply start time")
+  // workedMs = accumulated worked time up to the moment you last paused/resumed (excluding current running segment)
   let state = {
-    baseRate: 33.19,
-    dayMult: 1.00,
-    taxPct: 22.32,
-    displayMode: "gross",
-    plannedHours: 9.0,
+    baseRate: 0,
+    loadingPct: 0,
 
     started: false,
     running: false,
+
     startedAtMs: 0,
     lastResumeAtMs: 0,
     workedMs: 0,
+
     manualBreakMins: 0
   };
 
   function load() {
-    try{
+    try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      const obj = JSON.parse(raw);
-      if(obj && typeof obj === "object") state = { ...state, ...obj };
-    }catch(_){}
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") state = { ...state, ...parsed };
+    } catch (_) {}
   }
 
   function save() {
-    try{
+    try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }catch(_){}
+    } catch (_) {}
   }
 
-  function fmt2(x){
-    const n = Number.isFinite(x) ? x : 0;
-    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  function fmt4(x){
-    const n = Number.isFinite(x) ? x : 0;
-    return n.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-  }
-
-  function pad2(n){ return String(n).padStart(2,"0"); }
-
-  function fmtHMS(ms){
-    const s = Math.floor(ms/1000);
-    const h = Math.floor(s/3600);
-    const m = Math.floor((s%3600)/60);
-    const ss = s%60;
-    return `${pad2(h)}:${pad2(m)}:${pad2(ss)}`;
-  }
-
-  function fmtClockLong(d){
-    // e.g., "Sat, Feb 28, 2026 at 06:40:56"
-    const parts = {
-      weekday: "short", month: "short", day: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
-    };
-    const s = d.toLocaleString(undefined, parts);
-    // Many locales return: "Sat, 28 Feb 2026, 06:40:56" — keep it acceptable cross-locale
-    return s.replace(",", " at").replace(" at", " at ");
-  }
-
-  function effectiveHourly(){
+  function effectiveHourlyRate() {
     const base = Number(state.baseRate) || 0;
-    const mult = Number(state.dayMult) || 1;
-    return base * mult;
+    const pct  = Number(state.loadingPct) || 0;
+    return base * (1 + pct / 100);
   }
 
-  function totalWorkedMs(now){
-    if(!state.started) return 0;
+  function totalWorkedMs(nowMs) {
+    if (!state.started) return 0;
     const baseWorked = Math.max(0, Number(state.workedMs) || 0);
-    if(!state.running) return baseWorked;
+
+    if (!state.running) return baseWorked;
 
     const last = Number(state.lastResumeAtMs) || 0;
-    if(last <= 0) return baseWorked;
-    return baseWorked + Math.max(0, now - last);
+    if (last <= 0) return baseWorked; // defensive
+    return Math.max(0, baseWorked + Math.max(0, nowMs - last));
   }
 
-  function shiftStartLabel(){
-    if(!state.startedAtMs) return "—";
-    const d = new Date(state.startedAtMs);
-    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  function pad2(n) { return String(n).padStart(2, "0"); }
+
+  function formatHMS(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
   }
 
-  function plannedEndLabel(){
-    if(!state.startedAtMs || !(Number(state.plannedHours) > 0)) return "—";
-    const endMs = state.startedAtMs + Number(state.plannedHours) * 3600 * 1000;
-    const d = new Date(endMs);
-    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  function formatAUD(x, decimals = 2) {
+    const v = Number.isFinite(x) ? x : 0;
+    return v.toLocaleString(undefined, {
+      style: "currency",
+      currency: "AUD",
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
   }
 
-  function updateButtons(){
-    if(!state.started){
-      startBtn.textContent = "Start Shift";
+  function timeToHHMM(msEpoch) {
+    const d = new Date(msEpoch);
+    const hh = pad2(d.getHours());
+    const mm = pad2(d.getMinutes());
+    return `${hh}:${mm}`;
+  }
+
+  function setStatus() {
+    if (!state.started) {
+      statusEl.textContent = "Status: not started";
+      startBtn.textContent = "Start shift";
       startBtn.disabled = false;
-      pauseBtn.disabled = true;
+
       pauseBtn.textContent = "Pause";
-      statePill.textContent = "Not started";
+      pauseBtn.disabled = true;
       return;
     }
-    if(state.running){
-      startBtn.textContent = "Start Shift";
+
+    if (state.running) {
+      statusEl.textContent = "Status: running";
+      startBtn.textContent = "Shift running";
       startBtn.disabled = true;
-      pauseBtn.disabled = false;
+
       pauseBtn.textContent = "Pause";
-      statePill.textContent = "Running";
-    }else{
-      startBtn.textContent = "Resume Shift";
-      startBtn.disabled = false;
       pauseBtn.disabled = false;
-      pauseBtn.textContent = "Resume";
-      statePill.textContent = "Paused";
+      return;
     }
+
+    statusEl.textContent = "Status: paused (on break)";
+    startBtn.textContent = "Resume shift";
+    startBtn.disabled = false;
+
+    pauseBtn.textContent = "Resume";
+    pauseBtn.disabled = false;
   }
 
-  function startShift(){
+  function validateRateOrWarn() {
+    const base = Number(state.baseRate) || 0;
+    if (base <= 0) {
+      alert("Set your base hourly rate first (Settings).");
+      return false;
+    }
+    return true;
+  }
+
+  function startOrResumeShift() {
+    if (!validateRateOrWarn()) return;
+
     const now = Date.now();
-    if(!state.started){
+
+    if (!state.started) {
       state.started = true;
       state.running = true;
       state.startedAtMs = now;
       state.lastResumeAtMs = now;
       state.workedMs = 0;
       save();
-      updateButtons();
+      setStatus();
       return;
     }
-    // if paused -> resume
-    if(!state.running){
+
+    // Started but paused -> resume
+    if (!state.running) {
       state.running = true;
       state.lastResumeAtMs = now;
       save();
-      updateButtons();
+      setStatus();
     }
   }
 
-  function pauseResume(){
-    if(!state.started) return;
+  function pauseOrResume() {
+    if (!state.started) return;
+
     const now = Date.now();
 
-    if(state.running){
-      state.workedMs = totalWorkedMs(now);
+    if (state.running) {
+      // Pause: accumulate worked time up to now
+      const worked = totalWorkedMs(now);
+      state.workedMs = worked;
       state.running = false;
       state.lastResumeAtMs = 0;
       save();
-      updateButtons();
+      setStatus();
       return;
     }
-    // resume
+
+    // Resume
+    if (!validateRateOrWarn()) return;
     state.running = true;
     state.lastResumeAtMs = now;
     save();
-    updateButtons();
+    setStatus();
   }
 
-  function resetAll(){
-    const ok = confirm("End & reset? This clears the shift timer and earnings.");
-    if(!ok) return;
+  function resetAll() {
+    const ok = confirm("End & reset? This clears your shift timer and earnings.");
+    if (!ok) return;
+
     state.started = false;
     state.running = false;
     state.startedAtMs = 0;
     state.lastResumeAtMs = 0;
     state.workedMs = 0;
-    state.manualBreakMins = 0;
+
+    // keep pay settings
     save();
-    updateButtons();
+    setStatus();
   }
 
-  function clearOnlyShift(){
-    const ok = confirm("Clear shift only? (Keeps pay/tax settings)");
-    if(!ok) return;
-    state.started = false;
-    state.running = false;
-    state.startedAtMs = 0;
-    state.lastResumeAtMs = 0;
-    state.workedMs = 0;
-    state.manualBreakMins = 0;
+  function saveSettings() {
+    const base = Number(baseRateInput.value);
+    const pct  = Number(loadingPctInput.value);
+
+    if (!Number.isFinite(base) || base < 0) {
+      alert("Base hourly rate must be a valid non-negative number.");
+      return;
+    }
+    if (!Number.isFinite(pct) || pct < 0) {
+      alert("Loading % must be a valid non-negative number.");
+      return;
+    }
+
+    state.baseRate = base;
+    state.loadingPct = pct;
     save();
-    updateButtons();
+    setStatus();
   }
 
-  function applyStartTimeToday(){
-    const t = (startTimeInput.value || "").trim(); // HH:MM
-    if(!t){ alert("Pick a start time first."); return; }
+  function applyStartTimeToday() {
+    const t = (startTimeInput.value || "").trim(); // "HH:MM"
+    if (!t) {
+      alert("Pick a shift start time (today) first.");
+      return;
+    }
 
-    const [hhS, mmS] = t.split(":");
-    const hh = Number(hhS), mm = Number(mmS);
-    if(!Number.isFinite(hh) || !Number.isFinite(mm)){ alert("Invalid time."); return; }
-
-    const now = Date.now();
-    const d = new Date();
-    d.setHours(hh, mm, 0, 0);
-    let startMs = d.getTime();
-
-    // If user selected a future time (relative to now), assume yesterday
-    if(startMs > now) startMs -= 24*3600*1000;
+    const [hhStr, mmStr] = t.split(":");
+    const hh = Number(hhStr), mm = Number(mmStr);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm)) {
+      alert("Invalid time format.");
+      return;
+    }
 
     const breakMins = Math.max(0, Number(breakMinsInput.value) || 0);
     state.manualBreakMins = breakMins;
 
-    // Worked-to-now minus break mins
-    const workedDesired = Math.max(0, (now - startMs) - breakMins*60*1000);
-
-    state.started = true;
-    state.running = true;          // keep ticking immediately
-    state.startedAtMs = startMs;
-    state.workedMs = workedDesired;
-    state.lastResumeAtMs = now;
-
-    save();
-    updateButtons();
-  }
-
-  function openSettings(){
-    overlay.classList.add("open");
-    // Pre-fill
-    baseRateInput.value = String(Number(state.baseRate) || 0);
-    dayMultSelect.value = String(Number(state.dayMult || 1).toFixed(2));
-    taxPctInput.value   = String(Number(state.taxPct) || 0);
-    showNetSelect.value = state.displayMode === "net" ? "net" : "gross";
-    plannedHoursInput.value = String(Number(state.plannedHours) || 0);
-
-    // Fill start time from state if present
-    if(state.startedAtMs){
-      const dd = new Date(state.startedAtMs);
-      startTimeInput.value = `${pad2(dd.getHours())}:${pad2(dd.getMinutes())}`;
-    }else{
-      startTimeInput.value = "";
-    }
-    breakMinsInput.value = state.manualBreakMins ? String(state.manualBreakMins) : "";
-  }
-
-  function closeSettings(){
-    overlay.classList.remove("open");
-  }
-
-  function saveSettings(){
-    const base = Number(baseRateInput.value);
-    const mult = Number(dayMultSelect.value);
-    const tax  = Number(taxPctInput.value);
-    const mode = showNetSelect.value;
-    const ph   = Number(plannedHoursInput.value);
-
-    if(!Number.isFinite(base) || base < 0){ alert("Hourly rate must be valid."); return; }
-    if(!Number.isFinite(mult) || mult <= 0){ alert("Multiplier must be valid."); return; }
-    if(!Number.isFinite(tax) || tax < 0 || tax > 60){ alert("Tax % should be between 0 and 60."); return; }
-    if(!Number.isFinite(ph) || ph < 0){ alert("Planned hours must be valid."); return; }
-
-    state.baseRate = base;
-    state.dayMult = mult;
-    state.taxPct = tax;
-    state.displayMode = (mode === "net") ? "net" : "gross";
-    state.plannedHours = ph;
-
-    save();
-    closeSettings();
-  }
-
-  function setPresetOrdinary(){
-    baseRateInput.value = "33.19";
-    dayMultSelect.value = "1.00";
-  }
-  function setPresetSaturday(){
-    // If ordinary is 33.19, Saturday at +25% -> 41.49
-    baseRateInput.value = "41.49";
-    dayMultSelect.value = "1.00";
-  }
-
-  function render(){
     const now = Date.now();
 
-    // Header clock
-    clockEl.textContent = fmtClockLong(new Date(now));
+    const d = new Date();
+    d.setHours(hh, mm, 0, 0);
+    let startMs = d.getTime();
 
-    const effHr = effectiveHourly();
-    const perSec = effHr / 3600;
+    // If user picks a time later than "now", assume they meant yesterday
+    if (startMs > now) startMs -= 24 * 60 * 60 * 1000;
 
-    hourlyRateEl.textContent = `$${fmt2(effHr)}`;
-    perSecondEl.textContent  = `$${fmt4(perSec)} per second`;
+    const workedDesired = Math.max(0, (now - startMs) - breakMins * 60 * 1000);
+
+    state.started = true;
+    state.startedAtMs = startMs;
+
+    // Make totals consistent:
+    // - Set accumulated worked time to the desired worked-to-now.
+    // - If currently running, restart the running segment from now.
+    state.workedMs = workedDesired;
+    if (state.running) {
+      state.lastResumeAtMs = now;
+    } else {
+      state.lastResumeAtMs = 0;
+    }
+
+    save();
+    setStatus();
+  }
+
+  function render() {
+    const now = Date.now();
+
+    // Clock
+    const d = new Date(now);
+    clockEl.textContent = d.toLocaleString(undefined, {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    // Shift start display
+    if (state.started && state.startedAtMs) {
+      const s = new Date(state.startedAtMs);
+      startedAtEl.textContent = s.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } else {
+      startedAtEl.textContent = "—";
+    }
 
     const workedMs = totalWorkedMs(now);
-    timeWorkedEl.textContent = fmtHMS(workedMs);
+    workedEl.textContent = formatHMS(workedMs);
 
-    const grossEarned = (workedMs / 3600000) * effHr;
-    const taxPct = Math.max(0, Number(state.taxPct) || 0);
-    const netEarned  = grossEarned * (1 - taxPct/100);
+    const effHr = effectiveHourlyRate();
+    rateEl.textContent = `${formatAUD(effHr, 2)}/hr`;
 
-    const shown = (state.displayMode === "net") ? netEarned : grossEarned;
-    earningsEl.textContent = fmt2(shown);
+    const perSec = effHr / 3600;
+    speedEl.textContent = `${formatAUD(perSec, 4)}/sec`;
 
-    modePill.textContent = `Mode: ${state.displayMode === "net" ? "Net" : "Gross"}`;
-    shiftStartPill.textContent = `Shift start: ${shiftStartLabel()}`;
+    const earned = (workedMs / 3600000) * effHr;
+    moneyEl.textContent = formatAUD(earned, 2);
 
-    // Timeline range: start -> planned end
-    axisStart.textContent = shiftStartLabel();
-    axisEnd.textContent   = plannedEndLabel();
-
-    let pct = 0;
-    if(state.startedAtMs && Number(state.plannedHours) > 0){
-      const endMs = state.startedAtMs + Number(state.plannedHours) * 3600 * 1000;
-      pct = (now - state.startedAtMs) / (endMs - state.startedAtMs);
-      pct = Math.max(0, Math.min(1, pct));
-    }else{
-      // fallback: show dot at 0 if not set
-      pct = state.started ? 0.25 : 0;
-    }
-
-    const pctStr = (pct * 100).toFixed(2) + "%";
-    timelineFill.style.width = pctStr;
-    timelineDot.style.left = pctStr;
-    timelineNowLabel.style.left = pctStr;
-    timelineNowLabel.textContent = new Date(now).toLocaleTimeString([], { hour:"numeric", minute:"2-digit" });
-
-    // Status row
-    statusRow.innerHTML = "";
-    const chips = [];
-
-    chips.push(`Worked: ${fmtHMS(workedMs)}`);
-
-    if(state.displayMode === "net"){
-      const taxAmt = grossEarned - netEarned;
-      chips.push(`Tax est.: $${fmt2(taxAmt)} (${fmt2(taxPct)}%)`);
-    }
-
-    chips.push(`Rate base: $${fmt2(Number(state.baseRate)||0)} × ${Number(state.dayMult||1).toFixed(2)}`);
-
-    for(const t of chips){
-      const el = document.createElement("span");
-      el.className = "pill";
-      el.textContent = t;
-      statusRow.appendChild(el);
-    }
-
-    // persist lightly
-    if(now - render._lastSave > 2000){
+    // Save occasionally (timestamps are what really matters, but this is cheap)
+    if (now - render.lastSaveAt > 2000) {
       save();
-      render._lastSave = now;
+      render.lastSaveAt = now;
     }
   }
-  render._lastSave = 0;
+  render.lastSaveAt = 0;
 
   // Events
-  startBtn.addEventListener("click", startShift);
-  pauseBtn.addEventListener("click", pauseResume);
+  startBtn.addEventListener("click", startOrResumeShift);
+  pauseBtn.addEventListener("click", pauseOrResume);
   resetBtn.addEventListener("click", resetAll);
-
-  openSettingsBtn.addEventListener("click", openSettings);
-  closeSettingsBtn.addEventListener("click", closeSettings);
-  overlay.addEventListener("click", (e) => { if(e.target === overlay) closeSettings(); });
-
   saveSettingsBtn.addEventListener("click", saveSettings);
-  clearOnlyShiftBtn.addEventListener("click", clearOnlyShift);
-
   applyStartBtn.addEventListener("click", applyStartTimeToday);
 
-  presetOrdinaryBtn.addEventListener("click", setPresetOrdinary);
-  presetSaturdayBtn.addEventListener("click", setPresetSaturday);
-
-  document.addEventListener("keydown", (e) => {
-    if(e.key === "Escape") closeSettings();
-  });
-
+  // Persist on backgrounding (iOS Safari)
   document.addEventListener("visibilitychange", () => {
-    if(document.visibilityState === "hidden") save();
+    if (document.visibilityState === "hidden") save();
+    // On return, render will recompute from timestamps anyway.
   });
 
   // Init
   load();
-  updateButtons();
+
+  // Prefill settings inputs
+  baseRateInput.value = (Number(state.baseRate) || 0) ? String(state.baseRate) : "";
+  loadingPctInput.value = (Number(state.loadingPct) || 0) ? String(state.loadingPct) : "";
+
+  if (state.startedAtMs) {
+    startTimeInput.value = timeToHHMM(state.startedAtMs);
+  }
+  if (Number(state.manualBreakMins) > 0) {
+    breakMinsInput.value = String(state.manualBreakMins);
+  }
+
+  setStatus();
   render();
-  setInterval(render, 250);
+  setInterval(render, 250); // smooth enough, but not battery-hungry
 })();
 </script>
 </body>
