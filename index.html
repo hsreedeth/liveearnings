@@ -3,11 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Live Earnings</title>
+
   <style>
     :root { font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-    body { margin: 0; background: #0b0f17; color: #e8eefc; }
-    .wrap { max-width: 520px; margin: 0 auto; padding: 20px; }
+    body { margin: 0; background: #0b0f17; color: #e8eefc; -webkit-text-size-adjust: 100%; }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 20px; }
     .card {
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.10);
@@ -47,9 +51,11 @@
       cursor: pointer;
       touch-action: manipulation;
     }
-    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button:active:not(:disabled) { transform: translateY(1px); }
     .primary { background: rgba(80, 140, 255, 0.22); border-color: rgba(80, 140, 255, 0.45); }
     .danger  { background: rgba(255, 80, 110, 0.18); border-color: rgba(255, 80, 110, 0.40); }
+
     details { margin-top: 14px; }
     summary { cursor: pointer; opacity: 0.9; font-weight: 700; }
     .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
@@ -66,13 +72,19 @@
     .hint { font-size: 12px; opacity: 0.75; margin-top: 10px; line-height: 1.35; }
     .status { margin-top: 10px; font-size: 13px; opacity: 0.85; }
     .mono { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+    @media (max-width: 420px) {
+      .big { font-size: 40px; }
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="card">
       <h1>Live Earnings</h1>
-      <div class="big mono" id="money">$0.00</div>
+
+      <div class="big mono" id="money">A$0.00</div>
       <div class="sub mono" id="clock">—</div>
 
       <div class="row">
@@ -80,13 +92,20 @@
           <div class="label">Time worked</div>
           <div class="value mono" id="worked">00:00:00</div>
         </div>
+
+        <div class="pill">
+          <div class="label">Shift start</div>
+          <div class="value mono" id="startedAt">—</div>
+        </div>
+
         <div class="pill">
           <div class="label">Effective hourly rate</div>
-          <div class="value mono" id="rate">$0.00/hr</div>
+          <div class="value mono" id="rate">A$0.00/hr</div>
         </div>
+
         <div class="pill">
           <div class="label">Earning speed</div>
-          <div class="value mono" id="speed">$0.0000/sec</div>
+          <div class="value mono" id="speed">A$0.0000/sec</div>
         </div>
       </div>
 
@@ -103,24 +122,39 @@
 
       <details id="settings">
         <summary>Settings</summary>
+
         <div class="form">
           <div class="field">
-            <label class="label" for="baseRate">Base hourly rate ($)</label>
+            <label class="label" for="baseRate">Base hourly rate (AUD)</label>
             <input id="baseRate" type="number" min="0" step="0.01" placeholder="e.g. 30.00" />
           </div>
+
           <div class="field">
             <label class="label" for="loadingPct">Casual loading (%)</label>
             <input id="loadingPct" type="number" min="0" step="0.1" placeholder="e.g. 25" />
           </div>
+
+          <div class="field">
+            <label class="label" for="startTime">Shift start time (today)</label>
+            <input id="startTime" type="time" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="breakMins">Break minutes already taken</label>
+            <input id="breakMins" type="number" min="0" step="1" placeholder="e.g. 30" />
+          </div>
         </div>
+
         <div class="btnrow">
           <button id="saveSettingsBtn">Save settings</button>
+          <button id="applyStartBtn">Apply start time</button>
         </div>
+
         <div class="hint">
-          This app estimates earnings using <b>base rate × (1 + loading%)</b>. If your Saturday rate is already an all-in figure,
-          set loading to 0 and just enter the effective hourly rate as “base”.
-          <br><br>
-          Note: This is for personal tracking only—your payroll award/enterprise agreement is the source of truth.
+          Earnings are calculated as <b>base × (1 + loading%)</b> using elapsed worked time.
+          If your Saturday rate is already “all-in”, set loading to <b>0%</b> and put the all-in hourly rate as base.
+          <br /><br />
+          This is for personal tracking only—payroll/award rules remain the source of truth.
         </div>
       </details>
     </div>
@@ -131,39 +165,42 @@
   const $ = (id) => document.getElementById(id);
 
   // UI
-  const moneyEl  = $("money");
-  const clockEl  = $("clock");
-  const workedEl = $("worked");
-  const rateEl   = $("rate");
-  const speedEl  = $("speed");
-  const statusEl = $("status");
+  const moneyEl     = $("money");
+  const clockEl     = $("clock");
+  const workedEl    = $("worked");
+  const startedAtEl = $("startedAt");
+  const rateEl      = $("rate");
+  const speedEl     = $("speed");
+  const statusEl    = $("status");
 
-  const startBtn = $("startBtn");
-  const pauseBtn = $("pauseBtn");
-  const resetBtn = $("resetBtn");
+  const startBtn    = $("startBtn");
+  const pauseBtn    = $("pauseBtn");
+  const resetBtn    = $("resetBtn");
 
   const baseRateInput   = $("baseRate");
   const loadingPctInput = $("loadingPct");
+  const startTimeInput  = $("startTime");
+  const breakMinsInput  = $("breakMins");
+
   const saveSettingsBtn = $("saveSettingsBtn");
+  const applyStartBtn   = $("applyStartBtn");
 
-  const STORAGE_KEY = "liveEarnings.v1";
+  const STORAGE_KEY = "liveEarnings.v2";
 
-  // State model:
-  // - baseRate: number (per hour)
-  // - loadingPct: number (e.g. 25)
-  // - running: boolean
-  // - started: boolean
-  // - startedAtMs: epoch ms when shift first started (for reference)
-  // - lastResumeAtMs: epoch ms when last resumed
-  // - workedMs: accumulated worked time excluding current running stretch
+  // State:
+  // workedMs = accumulated worked time up to the moment you last paused/resumed (excluding current running segment)
   let state = {
     baseRate: 0,
     loadingPct: 0,
-    running: false,
+
     started: false,
+    running: false,
+
     startedAtMs: 0,
     lastResumeAtMs: 0,
-    workedMs: 0
+    workedMs: 0,
+
+    manualBreakMins: 0
   };
 
   function load() {
@@ -189,13 +226,13 @@
 
   function totalWorkedMs(nowMs) {
     if (!state.started) return 0;
-    if (!state.running) return Math.max(0, state.workedMs);
-    const extra = Math.max(0, nowMs - state.lastResumeAtMs);
-    return Math.max(0, state.workedMs + extra);
-  }
+    const baseWorked = Math.max(0, Number(state.workedMs) || 0);
 
-  function formatMoney(x) {
-    return x.toLocaleString(undefined, { style: "currency", currency: "AUD" });
+    if (!state.running) return baseWorked;
+
+    const last = Number(state.lastResumeAtMs) || 0;
+    if (last <= 0) return baseWorked; // defensive
+    return Math.max(0, baseWorked + Math.max(0, nowMs - last));
   }
 
   function pad2(n) { return String(n).padStart(2, "0"); }
@@ -208,96 +245,106 @@
     return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
   }
 
+  function formatAUD(x, decimals = 2) {
+    const v = Number.isFinite(x) ? x : 0;
+    return v.toLocaleString(undefined, {
+      style: "currency",
+      currency: "AUD",
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  function timeToHHMM(msEpoch) {
+    const d = new Date(msEpoch);
+    const hh = pad2(d.getHours());
+    const mm = pad2(d.getMinutes());
+    return `${hh}:${mm}`;
+  }
+
   function setStatus() {
     if (!state.started) {
       statusEl.textContent = "Status: not started";
       startBtn.textContent = "Start shift";
+      startBtn.disabled = false;
+
       pauseBtn.textContent = "Pause";
       pauseBtn.disabled = true;
       return;
     }
+
     if (state.running) {
       statusEl.textContent = "Status: running";
-      startBtn.textContent = "Restart shift (not recommended)";
+      startBtn.textContent = "Shift running";
+      startBtn.disabled = true;
+
       pauseBtn.textContent = "Pause";
       pauseBtn.disabled = false;
-    } else {
-      statusEl.textContent = "Status: paused (on break)";
-      startBtn.textContent = "Resume (or use button)";
-      pauseBtn.textContent = "Resume";
-      pauseBtn.disabled = false;
-    }
-  }
-
-  function tick() {
-    const now = Date.now();
-
-    // Live clock
-    const d = new Date(now);
-    clockEl.textContent = d.toLocaleString(undefined, {
-      weekday: "short", year: "numeric", month: "short", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
-    });
-
-    const worked = totalWorkedMs(now);
-    workedEl.textContent = formatHMS(worked);
-
-    const effHr = effectiveHourlyRate();
-    rateEl.textContent = `${formatMoney(effHr)}/hr`;
-
-    const perSec = effHr / 3600;
-    speedEl.textContent = `${formatMoney(perSec).replace("A$", "$")}/sec`.replace(".00/sec", ".0000/sec");
-
-    const earned = (worked / 3600000) * effHr;
-    moneyEl.textContent = formatMoney(earned);
-
-    // Save occasionally (and especially while running)
-    // This is light enough; still we throttle to ~2s.
-    if (now - tick.lastSaveAt > 2000) {
-      save();
-      tick.lastSaveAt = now;
+      return;
     }
 
-    requestAnimationFrame(tick);
-  }
-  tick.lastSaveAt = 0;
+    statusEl.textContent = "Status: paused (on break)";
+    startBtn.textContent = "Resume shift";
+    startBtn.disabled = false;
 
-  function validateSettingsOrWarn() {
+    pauseBtn.textContent = "Resume";
+    pauseBtn.disabled = false;
+  }
+
+  function validateRateOrWarn() {
     const base = Number(state.baseRate) || 0;
     if (base <= 0) {
-      alert("Set a base hourly rate in Settings first (e.g., 30.00).");
+      alert("Set your base hourly rate first (Settings).");
       return false;
     }
     return true;
   }
 
-  function startShift() {
-    if (!validateSettingsOrWarn()) return;
+  function startOrResumeShift() {
+    if (!validateRateOrWarn()) return;
 
     const now = Date.now();
-    state.started = true;
-    state.running = true;
-    state.startedAtMs = state.startedAtMs || now;
-    state.lastResumeAtMs = now;
-    // workedMs remains as-is (useful if resuming after pause)
-    save();
-    setStatus();
+
+    if (!state.started) {
+      state.started = true;
+      state.running = true;
+      state.startedAtMs = now;
+      state.lastResumeAtMs = now;
+      state.workedMs = 0;
+      save();
+      setStatus();
+      return;
+    }
+
+    // Started but paused -> resume
+    if (!state.running) {
+      state.running = true;
+      state.lastResumeAtMs = now;
+      save();
+      setStatus();
+    }
   }
 
   function pauseOrResume() {
     if (!state.started) return;
 
     const now = Date.now();
+
     if (state.running) {
       // Pause: accumulate worked time up to now
-      state.workedMs = totalWorkedMs(now);
+      const worked = totalWorkedMs(now);
+      state.workedMs = worked;
       state.running = false;
       state.lastResumeAtMs = 0;
-    } else {
-      // Resume
-      state.running = true;
-      state.lastResumeAtMs = now;
+      save();
+      setStatus();
+      return;
     }
+
+    // Resume
+    if (!validateRateOrWarn()) return;
+    state.running = true;
+    state.lastResumeAtMs = now;
     save();
     setStatus();
   }
@@ -305,11 +352,14 @@
   function resetAll() {
     const ok = confirm("End & reset? This clears your shift timer and earnings.");
     if (!ok) return;
+
     state.started = false;
     state.running = false;
     state.startedAtMs = 0;
     state.lastResumeAtMs = 0;
     state.workedMs = 0;
+
+    // keep pay settings
     save();
     setStatus();
   }
@@ -333,36 +383,124 @@
     setStatus();
   }
 
-  // Persist on backgrounding (iOS Safari)
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-      // If running, we still rely on timestamps, so no need to do anything special,
-      // but saving state avoids any edge cases.
-      save();
-    }
-  });
-
-  // Wire up buttons
-  startBtn.addEventListener("click", () => {
-    // If already started and running, don't restart (accidental tap)
-    if (state.started && state.running) {
-      alert("Shift already running. Use Pause for breaks or End & reset to finish.");
+  function applyStartTimeToday() {
+    const t = (startTimeInput.value || "").trim(); // "HH:MM"
+    if (!t) {
+      alert("Pick a shift start time (today) first.");
       return;
     }
-    // If started but paused, startShift() acts like resume but keeps workedMs
-    startShift();
-  });
 
+    const [hhStr, mmStr] = t.split(":");
+    const hh = Number(hhStr), mm = Number(mmStr);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm)) {
+      alert("Invalid time format.");
+      return;
+    }
+
+    const breakMins = Math.max(0, Number(breakMinsInput.value) || 0);
+    state.manualBreakMins = breakMins;
+
+    const now = Date.now();
+
+    const d = new Date();
+    d.setHours(hh, mm, 0, 0);
+    let startMs = d.getTime();
+
+    // If user picks a time later than "now", assume they meant yesterday
+    if (startMs > now) startMs -= 24 * 60 * 60 * 1000;
+
+    const workedDesired = Math.max(0, (now - startMs) - breakMins * 60 * 1000);
+
+    state.started = true;
+    state.startedAtMs = startMs;
+
+    // Make totals consistent:
+    // - Set accumulated worked time to the desired worked-to-now.
+    // - If currently running, restart the running segment from now.
+    state.workedMs = workedDesired;
+    if (state.running) {
+      state.lastResumeAtMs = now;
+    } else {
+      state.lastResumeAtMs = 0;
+    }
+
+    save();
+    setStatus();
+  }
+
+  function render() {
+    const now = Date.now();
+
+    // Clock
+    const d = new Date(now);
+    clockEl.textContent = d.toLocaleString(undefined, {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    // Shift start display
+    if (state.started && state.startedAtMs) {
+      const s = new Date(state.startedAtMs);
+      startedAtEl.textContent = s.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } else {
+      startedAtEl.textContent = "—";
+    }
+
+    const workedMs = totalWorkedMs(now);
+    workedEl.textContent = formatHMS(workedMs);
+
+    const effHr = effectiveHourlyRate();
+    rateEl.textContent = `${formatAUD(effHr, 2)}/hr`;
+
+    const perSec = effHr / 3600;
+    speedEl.textContent = `${formatAUD(perSec, 4)}/sec`;
+
+    const earned = (workedMs / 3600000) * effHr;
+    moneyEl.textContent = formatAUD(earned, 2);
+
+    // Save occasionally (timestamps are what really matters, but this is cheap)
+    if (now - render.lastSaveAt > 2000) {
+      save();
+      render.lastSaveAt = now;
+    }
+  }
+  render.lastSaveAt = 0;
+
+  // Events
+  startBtn.addEventListener("click", startOrResumeShift);
   pauseBtn.addEventListener("click", pauseOrResume);
   resetBtn.addEventListener("click", resetAll);
   saveSettingsBtn.addEventListener("click", saveSettings);
+  applyStartBtn.addEventListener("click", applyStartTimeToday);
+
+  // Persist on backgrounding (iOS Safari)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") save();
+    // On return, render will recompute from timestamps anyway.
+  });
 
   // Init
   load();
-  baseRateInput.value = state.baseRate ? String(state.baseRate) : "";
-  loadingPctInput.value = state.loadingPct ? String(state.loadingPct) : "";
+
+  // Prefill settings inputs
+  baseRateInput.value = (Number(state.baseRate) || 0) ? String(state.baseRate) : "";
+  loadingPctInput.value = (Number(state.loadingPct) || 0) ? String(state.loadingPct) : "";
+
+  if (state.startedAtMs) {
+    startTimeInput.value = timeToHHMM(state.startedAtMs);
+  }
+  if (Number(state.manualBreakMins) > 0) {
+    breakMinsInput.value = String(state.manualBreakMins);
+  }
+
   setStatus();
-  requestAnimationFrame(tick);
+  render();
+  setInterval(render, 250); // smooth enough, but not battery-hungry
 })();
 </script>
 </body>
