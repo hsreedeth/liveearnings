@@ -437,6 +437,38 @@
         .hidden {
             display: none !important;
         }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--line-color); /* Optional separator */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding-bottom: 20px; /* Add some bottom padding for mobile scrolling */
+        }
+
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: var(--text-primary);
+        }
+
+        .github-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
     </style>
 </head>
 <body>
@@ -507,6 +539,7 @@
             <button id="btnSetTime">Enter Start Time</button>
         </div>
     </div>
+
     <footer class="footer">
         <span>hsreedeth &copy; 2026</span>
         <a href="https://github.com/hsreedeth" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
